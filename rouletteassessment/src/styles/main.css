@@ -94,8 +94,41 @@ label{
     border: none;
 }
 
+.post-list{
+    padding:20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+.sticky{
+    background-color: white;
+    padding: 20px;
+    transition: all 1.2s;
+    min-width: 25%;
+    min-height: 25%;
+    margin: 15px;
+    overflow: hidden;
+}
+.sticky:hover{
+    transform: scale(1.1);
+}
+.sticky-header{
+    display: flex;
+    justify-content: space-between;
+}
+.sticky-title{
+    font-size: 20px;
+    color: rgb(7,43,80);
+}
+.close{
+    text-decoration: none;
+    color: rgb(7,43,80);
+}
+
 @media (max-width: 700px){
     .form{
         width: 80%;
+    }
+    .sticky{
+        width:80%;
     }
 }

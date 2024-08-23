@@ -1,26 +1,81 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './styles/main.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Sticky } from './components/Sticky'
+
+const baseURL = 'http://localhost:8000'
 
 const App = () =>{
 
     const [modalVisible,setModalVisible]=useState(false);
     const [title,setTitle]=useState('')
     const [content, setContent]=useState('')
+    const [sticky,SetSticky]=useState([])
 
-    const createSticky = (event) =>{
+    const createSticky = async (event) =>{
         event.preventDefault();
-        
-        console.log(title)
-        console.log(content)
+
+        const new_request= new Request(
+            `${baseURL}/posts`,
+            {
+                body:JSON.stringify({title,content}),
+                headers:{
+                    'Content-Type':'Application/Json'
+                },
+                method:'POST'
+            }
+        );
+
+        const response = await fetch(new_request)
+
+        const data = await response.json();
+
+        if(response.ok){
+            console.log(data)
+        }else{
+            console.log("Failed Request")
+        }
 
         setTitle('')
         setContent('')
 
         setModalVisible(false)
+
+        getAllStickies()
     }
 
+    const getAllStickies = async () =>{
+        const response = await fetch(`${baseURL}/posts/`);
+
+        const data = await response.json()
+
+        if (response.ok){
+            console.log(data)
+            SetSticky(data)
+        }else{
+            console.log("Failed Request")
+        }
+    }
+
+    useEffect(()=>{
+        getAllStickies()},[]
+    )
+
+
+    const deleteItem= async (id)=>{
+        console.log(id)
+
+        const response = await fetch(`${baseURL}/posts/${id}/`,{
+            method:'DELETE'
+        })
+
+        if(response.ok){
+            console.log(response.status)
+        }
+
+        getAllStickies()
+    }
     return(
         <div>
             <div className="header">
@@ -32,9 +87,27 @@ const App = () =>{
                         onClick={()=> setModalVisible(true)}>Post a note!</a>
                 </div>
             </div>
-            <div className="posts">
-                <p className="mantlepiece">No Stickies</p>
-            </div>
+            {sticky.length > 0?
+                (<div className="post-list">
+                {
+                    sticky.map(
+                        (item)=>(
+                            <Sticky title={item.title} 
+                            content={item.content}
+                            onclick={()=>deleteItem(item.id)}
+                            key={item.id}
+                            />
+                        )
+                    )
+                }
+                </div>
+                ):(
+                <div className="posts">
+                    <p className="mantlepiece">No Stickies... :(</p>
+                </div>
+                )
+            }
+            
             <div className={modalVisible? 'modal':'modal-invisible'}>
                 <div className="form">
                     <div className="form-header">
@@ -52,14 +125,14 @@ const App = () =>{
                             <input type="text" name="title" id="title" 
                                     value={title}
                                     onChange={(e)=>setTitle(e.target.value)}
-                                className="form-control" />
+                                className="form-control" required />
                         </div>
                         <div className="form-group">
                             <label htmlFor="content">content</label>
                             <textarea type="content" id="" cols="30" rows="7" 
                                     value={content}
                                     onChange={(e)=>setContent(e.target.value)}
-                                className='form-control' />
+                                className='form-control' required />
                         </div>
                         <div className="form-group">
                             <input type="submit" value="Stick" className="btn" onClick={(createSticky)} />
